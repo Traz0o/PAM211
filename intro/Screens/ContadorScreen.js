@@ -11,6 +11,12 @@ import { Button } from 'react-native-web';
 export default function ContadorScreen() {
   const [contador, setContador] = useState(0); //Estado inicial del contador
   //contador = la variable, setContador = funcion para actualizar el estado, useState(0) = valor inicial del estado
+  const [screen, setScreen] = useState('Menu');
+  switch(screen) {
+    case 'menu':
+        return <MenuScreen />;
+    case 'contador':
+    default:
   return (
 
 
@@ -22,11 +28,15 @@ export default function ContadorScreen() {
       <Button color='red' title = "Disminuir" onPress={()=>setContador(contador-1)}/> {/* Llamar a la funcion que actualiza el estado, en este caso se le resta 1 al contador */}
       <Button color='gold' title = "Reiniciar" onPress={()=>setContador(contador==0)}/> {/* Llamar a la funcion que actualiza el estado, en este caso se reinicia el contador a 0 */}
         </View>
-
+        <View style = {styles.botonMenu}>
+      <Button title = "Regresar al menu" onPress={()=>setScreen('menu')}/> {/* Llamar a la funcion que actualiza el estado, en este caso se reinicia el contador a 0 */}
+        </View>
 
       <StatusBar style="auto" />
     </View>
   );
+}
+
 }
 
 //3.- Zona de los estilos
@@ -59,5 +69,10 @@ const styles = StyleSheet.create({
     justifyContent:'space-between',
     gap:20,
   },
+  botonMenu:{
+    marginTop:20,
+    padding:10,
+    borderRadius:5,
+  }
 
 });
