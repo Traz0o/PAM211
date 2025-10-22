@@ -2,6 +2,7 @@ import { Text, StyleSheet, View } from 'react-native'
 import React, { Component, use } from 'react'
 import BotoneScreen from './BotoneScreen'
 import ContadorScreen from './ContadorScreen'
+import ImageScreen from './ImageScreen'
 import { Button } from 'react-native-web'
 import { useState } from 'react'
 import Inputs from './Inputs'
@@ -15,6 +16,9 @@ export default function MenuScreen() {
             return <BotoneScreen/>;
         case 'inputs':
           return <Inputs/>;
+        case 'image':
+           return <ImageScreen/>;
+        case 'scroll':
         case 'menu':
             default:
                 return (
@@ -25,7 +29,7 @@ export default function MenuScreen() {
         <Button title = "Pract:Contador" onPress={() => setScreen('contador')}/>
         <Button title = 'Pract:Botones' onPress={() => setScreen('botones')}/>
         <Button title = 'Pract:Inputs' onPress={() => setScreen('inputs')}/>
-        <Button title = 'Pract:image' onPress={() => setScreen('botones')}/>
+        <Button title = 'Pract:image' onPress={() => setScreen('image')}/>
         <Button title = 'Pract:Scroll' onPress={() => setScreen('botones')}/>
         <Button title = 'Pract:activity' onPress={() => setScreen('botones')}/>
         <Button title = 'Pract:Flatlist' onPress={() => setScreen('botones')}/>
