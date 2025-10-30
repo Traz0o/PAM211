@@ -1,11 +1,13 @@
 import { Text, StyleSheet, View } from 'react-native'
-import React, { Component, use } from 'react'
+import React, { Activity, Component, use } from 'react'
 import BotoneScreen from './BotoneScreen'
 import ContadorScreen from './ContadorScreen'
 import ImageScreen from './ImageScreen'
 import RepasoScreen from './RepasoScreen'
 import ScrollviewScreen from './ScrollviewScreen'
-import { Button } from 'react-native-web'
+import ActivityIndicatorScreen from './ActivityIndicatorScreen'
+import FlatlistScreen from './FlatListScreen'
+import { ActivityIndicator, Button } from 'react-native-web'
 import { useState } from 'react'
 import Inputs from './Inputs'
 
@@ -24,6 +26,10 @@ export default function MenuScreen() {
           return <RepasoScreen/>;
         case 'scroll':
           return <ScrollviewScreen/>
+        case 'indicator':
+          return <ActivityIndicatorScreen/>;
+        case 'flatlist':
+            return <FlatlistScreen/>;
         case 'menu':
             default:
                 return (
@@ -36,8 +42,8 @@ export default function MenuScreen() {
         <Button title = 'Pract:Inputs' onPress={() => setScreen('inputs')}/>
         <Button title = 'Pract:image' onPress={() => setScreen('image')}/>
         <Button title = 'Pract:Scroll' onPress={() => setScreen('scroll')}/>
-        <Button title = 'Pract:activity' onPress={() => setScreen('botones')}/>
-        <Button title = 'Pract:Flatlist' onPress={() => setScreen('botones')}/>
+        <Button title = 'Pract:activity' onPress={() => setScreen('indicator')}/>
+        <Button title = 'Pract:Flatlist' onPress={() => setScreen('flatlist')}/>
         <Button title = 'Pract:Modal' onPress={() => setScreen('botones')}/>
         <Button title = 'Pract:Repaso' onPress={() => setScreen('repaso')}/>
         </View>
