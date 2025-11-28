@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, FlatList,
-  StyleSheet, Alert, ActivityIndicator, Platform
+  StyleSheet, Alert, ActivityIndicator, Platform, Modal
 } from 'react-native';
 import { UsuarioController } from '../controllers/UsuarioController';
 
@@ -13,6 +13,12 @@ export default function InsertUsuarioScreen() {
   const [nombre, setNombre] = useState('');
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  
+  // Estados para edición
+  const [modalVisible, setModalVisible] = useState(false);
+  const [usuarioEditando, setUsuarioEditando] = useState(null);
+  const [nombreEditar, setNombreEditar] = useState('');
+  const [editando, setEditando] = useState(false);
 
   const cargarUsuarios = useCallback(async () => {
     try {
@@ -55,6 +61,57 @@ export default function InsertUsuarioScreen() {
     }
   };
 
+  const handleEliminarUsuario = (usuario) => {
+    Alert.alert(
+      'Confirmar Eliminación',
+      `¿Estás seguro de eliminar a ${usuario.nombre}?`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await controller.eliminarUsuario(usuario.id);
+              Alert.alert('Éxito', 'Usuario eliminado correctamente');
+            } catch (error) {
+              Alert.alert('Error', error.message);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const abrirModalEdicion = (usuario) => {
+    setUsuarioEditando(usuario);
+    setNombreEditar(usuario.nombre);
+    setModalVisible(true);
+  };
+
+  const cerrarModalEdicion = () => {
+    setModalVisible(false);
+    setUsuarioEditando(null);
+    setNombreEditar('');
+  };
+
+  const handleActualizarUsuario = async () => {
+    if (editando) return;
+    try {
+      setEditando(true);
+      await controller.actualizarUsuario(usuarioEditando.id, nombreEditar);
+      Alert.alert('Éxito', 'Usuario actualizado correctamente');
+      cerrarModalEdicion();
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setEditando(false);
+    }
+  };
+
   const renderUsuario = ({ item, index }) => (
     <View style={styles.userItem}>
       <View style={styles.userNumber}>
@@ -70,6 +127,18 @@ export default function InsertUsuarioScreen() {
             day: 'numeric'
           })}
         </Text>
+      </View>
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => abrirModalEdicion(item)}>
+          <Text style={styles.editButtonText}>✏️</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleEliminarUsuario(item)}>
+          <Text style={styles.deleteButtonText}>X</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -132,6 +201,54 @@ export default function InsertUsuarioScreen() {
           />
         )}
       </View>
+
+      {/* Modal de Edición */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={cerrarModalEdicion}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Editar Usuario</Text>
+            
+            {usuarioEditando && (
+              <View style={styles.modalInfo}>
+                <Text style={styles.modalLabel}>ID: {usuarioEditando.id}</Text>
+                <Text style={styles.modalLabel}>
+                  Creado: {new Date(usuarioEditando.fechaCreacion).toLocaleDateString('es-MX')}
+                </Text>
+              </View>
+            )}
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Nuevo nombre"
+              value={nombreEditar}
+              onChangeText={setNombreEditar}
+              editable={!editando}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={cerrarModalEdicion}
+                disabled={editando}>
+                <Text style={styles.modalButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton, editando && styles.buttonDisabled]}
+                onPress={handleActualizarUsuario}
+                disabled={editando}>
+                <Text style={styles.modalButtonText}>
+                  {editando ? 'Guardando...' : 'Guardar'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -241,6 +358,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderLeftWidth: 4,
     borderLeftColor: '#007AFF',
+    alignItems: 'center',
   },
   userNumber: {
     width: 35,
@@ -274,6 +392,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  editButton: {
+    backgroundColor: '#FFA500',
+    padding: 10,
+    borderRadius: 6,
+    width: 40,
+    alignItems: 'center',
+  },
+  editButtonText: {
+    fontSize: 18,
+  },
+  deleteButton: {
+    backgroundColor: '#FF3B30',
+    padding: 10,
+    borderRadius: 6,
+    width: 40,
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    fontSize: 18,
+  },
   emptyContainer: {
     alignItems: 'center',
     paddingVertical: 40,
@@ -290,5 +432,68 @@ const styles = StyleSheet.create({
   emptySubtext: {
     fontSize: 14,
     color: '#bbb',
+  },
+  // Estilos del Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    width: '85%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  modalInfo: {
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  modalLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    padding: 15,
+    fontSize: 16,
+    backgroundColor: '#fafafa',
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  modalButton: {
+    flex: 1,
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#6c757d',
+  },
+  saveButton: {
+    backgroundColor: '#007AFF',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
